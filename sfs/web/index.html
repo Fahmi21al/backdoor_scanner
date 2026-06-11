@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SFS Dashboard</title>
+    <link rel="stylesheet" href="style.css?v=2">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            SFS <span>Forensics</span>
+        </div>
+        <nav>
+            <a href="#" class="nav-item active" onclick="switchMainView('view-projects', this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                Projects & Scans
+            </a>
+            <a href="#" class="nav-item" onclick="switchMainView('view-baselines', this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                Baselines
+            </a>
+            <a href="#" class="nav-item" onclick="switchMainView('view-dast', this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m12 16 4-4-4-4"/><path d="M8 12h8"/></svg>
+                Dynamic Scanner
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="header-top">
+            <h1 id="page-title">Projects & Scans</h1>
+        </header>
+
+        <!-- View: Projects -->
+        <div id="view-projects">
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-header">Add New Project</div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <input type="text" id="p-name" placeholder="Project Name">
+                        <select id="p-type" style="max-width: 200px;">
+                            <option value="ojs">OJS</option>
+                            <option value="wordpress">WordPress</option>
+                            <option value="laravel">Laravel</option>
+                            <option value="generic">Generic PHP</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <input type="text" id="p-path" placeholder="Target Path">
+                        <button type="button" class="outline" onclick="pickPath('p-path', 'folder')">Browse</button>
+                    </div>
+                    <div class="form-row">
+                        <input type="text" id="p-baseline" placeholder="Baseline Path (Optional)">
+                        <button type="button" class="outline" onclick="pickPath('p-baseline', 'folder')">Browse</button>
+                    </div>
+                    <div class="form-row">
+                        <input type="text" id="p-db" placeholder="Database Dump Path (.sql) (Optional)">
+                        <button type="button" class="outline" onclick="pickPath('p-db', 'file')">Browse</button>
+                    </div>
+                    <div>
+                        <button onclick="createProject()">Add Project</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Existing Projects</div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Target Path</th>
+                                <th>Baseline Path</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projects-body">
+                            <!-- Data populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- View: Baselines -->
+        <div id="view-baselines" class="hidden">
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-header">Add New Baseline</div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <input type="text" id="b-project" placeholder="Project ID">
+                        <input type="text" id="b-name" placeholder="Baseline Name">
+                    </div>
+                    <div class="form-row">
+                        <input type="text" id="b-path" placeholder="Source Path">
+                        <button type="button" class="outline" onclick="pickPath('b-path', 'folder')">Browse</button>
+                        <input type="text" id="b-version" placeholder="Version (e.g. 3.3.0)" style="max-width: 200px;">
+                    </div>
+                    <div>
+                        <button onclick="createBaseline()">Add Baseline</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Existing Baselines</div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Project ID</th>
+                                <th>Name</th>
+                                <th>Source Path</th>
+                                <th>Version</th>
+                            </tr>
+                        </thead>
+                        <tbody id="baselines-body">
+                            <!-- Data populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- View: Dynamic Scanner (DAST) -->
+        <div id="view-dast" class="hidden">
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-header">Dynamic Application Security Testing (Katana + Nuclei)</div>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">
+                    Discover attack surfaces using Katana and scan discovered endpoints for vulnerabilities using Nuclei.
+                </p>
+                <div class="form-group">
+                    <div class="form-row">
+                        <input type="text" id="dast-url" placeholder="https://target.com" style="flex: 2;">
+                        <input type="number" id="dast-depth" placeholder="Max Depth (Default: 2)" style="flex: 1; padding: 0.6rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                        <button id="btn-run-dast" onclick="runDastScan()" style="padding-left: 2rem; padding-right: 2rem;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                            Run DAST Scan
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="dast-status" class="hidden" style="margin-top: 1.5rem; padding: 1rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-md); color: #1e40af;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="spinner" style="width: 20px; height: 20px; border: 3px solid rgba(30,64,175,0.3); border-radius: 50%; border-top-color: #1e40af; animation: spin 1s ease-in-out infinite;"></div>
+                        <span id="dast-status-text">Starting Katana discovery...</span>
+                    </div>
+                    <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+                    <pre id="dast-live-console" style="background:#0f172a; color:#10b981; padding:1.5rem; height:150px; overflow-y:auto; border-radius:var(--radius-md); margin-top:1.5rem; font-size:13px; font-family:monospace; white-space:pre-wrap; text-align: left;"></pre>
+                </div>
+            </div>
+
+            <!-- DAST Results Area -->
+            <div id="dast-results-card" class="card hidden">
+                <div class="card-header" style="display:flex; justify-content:space-between;">
+                    <span>Vulnerability Findings</span>
+                    <span id="dast-total-badge" class="badge info">0 Found</span>
+                </div>
+                <div style="overflow-x: auto; max-height: 500px; overflow-y: auto;">
+                    <table style="width: 100%;">
+                        <thead style="position: sticky; top: 0; background: var(--bg-card); z-index: 1;">
+                            <tr>
+                                <th>Severity</th>
+                                <th>Name</th>
+                                <th>Template ID</th>
+                                <th>Matched Endpoint</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dast-results-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scan Results Modal (Forensic & Malware) -->
+    <div id="scanModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Project Scan Results</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Status Container -->
+                <div id="scanStatusContainer" style="padding: 2rem 0; text-align: center;">
+                    <h3 id="scanStatusText" style="margin-bottom: 1rem; color: var(--text-main);">Running scan... please wait.</h3>
+                    <div style="width: 100%; background-color: #e2e8f0; border-radius: 9999px; overflow: hidden; height: 12px;">
+                        <div id="scanProgressBar" style="width: 0%; height: 100%; background-color: var(--primary); transition: width 0.4s ease-out;"></div>
+                    </div>
+                    <p id="scanProgressText" style="text-align: right; font-weight: 600; margin-top: 0.5rem; color: var(--text-muted); font-size: 0.85rem;">0%</p>
+                    <pre id="scanLiveConsole" style="background:#0f172a; color:#10b981; padding:1.5rem; height:200px; overflow-y:auto; border-radius:var(--radius-md); margin-top:1.5rem; font-size:13px; font-family:monospace; white-space:pre-wrap; text-align: left;"></pre>
+                </div>
+                
+                <!-- Results Container -->
+                <div id="scanResultsArea" class="hidden" style="flex: 1; flex-direction: column;">
+                    
+                    <!-- Risk Score Banner -->
+                    <div id="risk-banner" style="display:flex; justify-content:space-between; align-items:center; padding: 1.5rem 2rem; margin-bottom: 1.5rem; border-radius: var(--radius-md); color: #fff;">
+                        <div>
+                            <h2 style="margin:0; font-size: 1.25rem; text-transform: uppercase;">Overall Risk: <span id="risk-level">UNKNOWN</span></h2>
+                            <p style="margin:0; font-size: 0.9rem; opacity: 0.9;">Score: <span id="risk-score">0</span>/100</p>
+                        </div>
+                        <div style="display:flex; gap: 0.5rem;">
+                            <button id="btn-dl-html" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); font-size: 0.85rem;" onclick="downloadHtmlReport()">Download HTML Report</button>
+                            <button id="btn-dl-json" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); font-size: 0.85rem;" onclick="downloadJsonReport()">Download JSON</button>
+                        </div>
+                    </div>
+
+                    <!-- Stats Boxes -->
+                    <div class="stats-container">
+                        <div class="stat-box" style="background: var(--danger);">
+                            <h3>Critical / High</h3>
+                            <h2 id="count-critical-high">0</h2>
+                        </div>
+                        <div class="stat-box" style="background: var(--warning);">
+                            <h3>Medium</h3>
+                            <h2 id="count-medium">0</h2>
+                        </div>
+                        <div class="stat-box" style="background: #3b82f6;">
+                            <h3>Modified</h3>
+                            <h2 id="count-modified">0</h2>
+                        </div>
+                        <div class="stat-box" style="background: #10b981;">
+                            <h3>Added / Deleted</h3>
+                            <h2 id="count-added-deleted">0</h2>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="switchTab('tab-all')" id="btn-tab-all">All Findings</button>
+                        <button class="tab-btn" onclick="switchTab('tab-db-payloads')" id="btn-tab-db-payloads">DB Payloads</button>
+                        <button class="tab-btn" onclick="switchTab('tab-malware')" id="btn-tab-malware">Malware & IOCs</button>
+                        <button class="tab-btn" onclick="switchTab('tab-db')" id="btn-tab-db">DB Users</button>
+                        <button class="tab-btn" onclick="switchTab('tab-modified')" id="btn-tab-modified">Modified</button>
+                        <button class="tab-btn" onclick="switchTab('tab-added')" id="btn-tab-added">Added</button>
+                        <button class="tab-btn" onclick="switchTab('tab-deleted')" id="btn-tab-deleted">Deleted</button>
+                    </div>
+
+                    <!-- Tab Content Areas -->
+                    <div id="tab-all" class="tab-content" style="display:block;">
+                        <table style="width: 100%;">
+                            <thead style="position: sticky; top: 0; background: var(--bg-card);">
+                                <tr>
+                                    <th style="width: 100px;">Severity</th>
+                                    <th>Category</th>
+                                    <th>Path / Details</th>
+                                    <th>Threat Match</th>
+                                </tr>
+                            </thead>
+                            <tbody id="res-all-body"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="tab-db-payloads" class="tab-content hidden">
+                        <table>
+                            <thead><tr><th>Severity</th><th>Table Name</th><th>Matched Threat</th><th>Content</th></tr></thead>
+                            <tbody id="res-db-payloads-body"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="tab-malware" class="tab-content hidden">
+                        <table>
+                            <thead><tr><th>Severity</th><th>File Path</th><th>Matched Rules / IOC</th></tr></thead>
+                            <tbody id="res-malware-body"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="tab-db" class="tab-content hidden">
+                        <table>
+                            <thead><tr><th>Severity</th><th>Username</th><th>Email</th><th>Role/Status</th></tr></thead>
+                            <tbody id="res-db-body"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="tab-modified" class="tab-content hidden">
+                        <table>
+                            <thead><tr><th>Severity</th><th>File Path</th><th>Action</th></tr></thead>
+                            <tbody id="res-modified-body"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="tab-added" class="tab-content hidden">
+                        <table>
+                            <thead><tr><th>Severity</th><th>File Path</th><th>Size (Bytes)</th></tr></thead>
+                            <tbody id="res-added-body"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="tab-deleted" class="tab-content hidden">
+                        <table>
+                            <thead><tr><th>Severity</th><th>File Path</th><th>Status</th></tr></thead>
+                            <tbody id="res-deleted-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diff Viewer Modal -->
+    <div id="diffModal" class="modal" style="z-index: 1001;">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <h2 id="diff-file-title">File Diff</h2>
+                <span class="close" onclick="closeDiffModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <pre id="diff-content" style="background:#1e293b; color:#cbd5e1; padding:1.5rem; overflow-x:auto; font-size:13px; border-radius:var(--radius-md); font-family:monospace; white-space:pre-wrap; word-wrap:break-word;"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js?v=6"></script>
+    <script>
+        function switchMainView(viewId, btnElement) {
+            // Hide all views
+            document.getElementById('view-projects').classList.add('hidden');
+            document.getElementById('view-baselines').classList.add('hidden');
+            document.getElementById('view-dast').classList.add('hidden');
+            
+            // Remove active from nav
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            // Show selected view
+            document.getElementById(viewId).classList.remove('hidden');
+            btnElement.classList.add('active');
+
+            // Update title
+            document.getElementById('page-title').innerText = btnElement.innerText.trim();
+        }
+    </script>
+</body>
+</html>

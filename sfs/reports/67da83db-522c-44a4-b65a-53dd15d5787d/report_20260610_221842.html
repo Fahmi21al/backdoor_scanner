@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SFS Forensic Report</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; color: #334155; margin: 0; padding: 2rem; }
+        .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 3rem; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        h1 { color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem; }
+        .risk-banner { padding: 1.5rem; border-radius: 6px; margin: 2rem 0; color: #fff; font-size: 1.5rem; font-weight: bold; text-align: center; }
+        .risk-CRITICAL { background-color: #ef4444; }
+        .risk-HIGH { background-color: #f97316; }
+        .risk-MEDIUM { background-color: #eab308; color: #fff; }
+        .risk-LOW { background-color: #3b82f6; }
+        .risk-INFO { background-color: #10b981; }
+        .stats { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .stat-box { flex: 1; padding: 1.5rem; background: #f1f5f9; border-radius: 6px; text-align: center; }
+        .stat-box h3 { margin: 0 0 0.5rem 0; color: #64748b; font-size: 0.875rem; text-transform: uppercase; }
+        .stat-box p { margin: 0; font-size: 2rem; font-weight: bold; color: #0f172a; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f8fafc; color: #475569; font-weight: 600; }
+        .badge { padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; color: white; }
+        .badge.critical { background: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>System Forensic Scanner (SFS) Report</h1>
+        <p><strong>Generated on:</strong> Wed, 10 Jun 2026 22:18:42 +07</p>
+        
+        <div class="risk-banner risk-CRITICAL">
+            OVERALL RISK: CRITICAL (Score: 100/100)
+        </div>
+
+        <div class="stats">
+            <div class="stat-box"><h3>Malware / IOCs</h3><p>3</p></div>
+            <div class="stat-box"><h3>DB Payloads</h3><p>3</p></div>
+            <div class="stat-box"><h3>Suspicious DB Users</h3><p>5</p></div>
+            <div class="stat-box"><h3>Modified Files</h3><p>1</p></div>
+        </div>
+
+        <h2>Critical Database Payloads</h2><table><thead><tr><th>Table</th><th>Matched Rules</th></tr></thead><tbody><tr><td><b>wp_options</b></td><td style='color:#ef4444;'>Basic Heuristic: <?php</td></tr><tr><td><b>articles</b></td><td style='color:#ef4444;'>Basic Heuristic: <script</td></tr><tr><td><b>cache</b></td><td style='color:#ef4444;'>Basic Heuristic: <?php</td></tr></tbody></table><h2>Malware & IOC Findings</h2><table><thead><tr><th>File Path</th><th>Matched Patterns</th></tr></thead><tbody><tr><td style='word-break:break-all;'>fake_image.jpg</td><td style='color:#ef4444; font-size:0.85rem;'>Simple_PHP_Webshell<br>Advanced IOC Pattern: (?i)(system|shell_exec|passthru|exec|popen|proc_open)\s*\(\s*\$_(GET|POST|REQUEST|COOKIE|SERVER|FILES)<br>Spoofed File Extension (Actual Content is Script/PHP)<br></td></tr><tr><td style='word-break:break-all;'>shell.php</td><td style='color:#ef4444; font-size:0.85rem;'>Simple_PHP_Webshell<br>Advanced IOC Pattern: SFS_TEST_IOC_PATTERN<br></td></tr><tr><td style='word-break:break-all;'>database.sql</td><td style='color:#ef4444; font-size:0.85rem;'>Simple_PHP_Webshell<br>PHP_B374K_Webshell<br>PHP_WSO_Webshell<br>WSO_Webshell<br>B374k_Webshell<br>Generic_Obfuscated_PHP<br>Advanced IOC Pattern: (?i)eval\s*\(\s*(base64_decode|gzinflate|str_rot13|gzuncompress|pack)\s*\(<br></td></tr></tbody></table>
+    </div>
+</body>
+</html>
